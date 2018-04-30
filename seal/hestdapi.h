@@ -46,6 +46,8 @@ namespace seal
 
             Ciphertext &operator =(Ciphertext &&in) = default;
 
+            std::string get_key_id() const;
+
         private:
             std::unique_ptr<seal::Ciphertext> ciphertext_;
         };
@@ -72,13 +74,15 @@ namespace seal
 
             std::string param_id() const;
 
-            void keygen_sk();
-            void keygen_sk_pk();
+            // PKE/SKE
+            std::string keygen_sk();
+            bool keygen_pk(std::string key_id);
+            std::string keygen_sk_pk();
 
-            void serialize_sk_to_file(std::string filename) const;
-            void serialize_pk_to_file(std::string filename) const;
-            void serialize_sk_to_str(std::string &out) const;
-            void serialize_pk_to_str(std::string &out) const;
+            void serialize_sk_to_file(std::string key_id, std::string filename) const;
+            void serialize_pk_to_file(std::string key_id, std::string filename) const;
+            void serialize_sk_to_str(std::string key_id, std::string &out) const;
+            void serialize_pk_to_str(std::string key_id, std::string &out) const;
             void deserialize_sk_from_file(std::string filename);
             void deserialize_pk_from_file(std::string filename);
             void deserialize_sk_from_str(std::string in);
@@ -92,6 +96,38 @@ namespace seal
 
             void decrypt(const Ciphertext &in, Plaintext &out) const;
             Plaintext decrypt(const Ciphertext &in) const;
+
+            // Homomorphic operations
+            bool keygen_multk(std::string key_id);
+
+            void serialize_multk_to_file(std::string filename) const;
+            void serialize_multk_to_str(std::string &out) const;
+            void deserialize_multk_from_file(std::string filename);
+            void deserialize_multk_from_str(std::string in);
+
+            void eval_add(const Ciphertext &in1, const Ciphertext &in2, Ciphertext &out) const;
+            void eval_add(const Ciphertext &in1, const Plaintext &in2, Ciphertext &out) const;
+            void eval_add(const Plaintext &in1, const Ciphertext &in2, Ciphertext &out) const;
+            Ciphertext eval_add(const Ciphertext &in1, const Ciphertext &in2) const;
+            Ciphertext eval_add(const Ciphertext &in1, const Plaintext &in2) const;
+            Ciphertext eval_add(const Plaintext &in1, const Ciphertext &in2) const;
+
+            void eval_sub(const Ciphertext &in1, const Ciphertext &in2, Ciphertext &out) const;
+            void eval_sub(const Ciphertext &in1, const Plaintext &in2, Ciphertext &out) const;
+            void eval_sub(const Plaintext &in1, const Ciphertext &in2, Ciphertext &out) const;
+            Ciphertext eval_sub(const Ciphertext &in1, const Ciphertext &in2) const;
+            Ciphertext eval_sub(const Ciphertext &in1, const Plaintext &in2) const;
+            Ciphertext eval_sub(const Plaintext &in1, const Ciphertext &in2) const;
+
+            void eval_negate(const Ciphertext &in, Ciphertext &out) const;
+            Ciphertext eval_negate(const Ciphertext &in) const;
+
+            void eval_mult(const Ciphertext &in1, const Ciphertext &in2, Ciphertext &out) const;
+            void eval_mult(const Ciphertext &in1, const Plaintext &in2, Ciphertext &out) const;
+            void eval_mult(const Plaintext &in1, const Ciphertext &in2, Ciphertext &out) const;
+            Ciphertext eval_mult(const Ciphertext &in1, const Ciphertext &in2) const;
+            Ciphertext eval_mult(const Ciphertext &in1, const Plaintext &in2) const;
+            Ciphertext eval_mult(const Plaintext &in1, const Ciphertext &in2) const;
 
         private:
             std::unique_ptr<EncryptionParameters> parms_;
