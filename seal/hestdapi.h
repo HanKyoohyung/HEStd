@@ -1,62 +1,55 @@
 #pragma once
 
 #include <string>
-#include <memory>
-
-#include "seal/context.h"
-#include "seal/keygenerator.h"
-#include "seal/ciphertext.h"
-#include "seal/plaintext.h"
 
 namespace seal
 {
     namespace HEStdAPI
     {
-        class Plaintext
+        class HE_Plaintext
         {
         public:
-            Plaintext() = default;
+            HE_Plaintext() = default;
 
-            ~Plaintext() = default;
+            ~HE_Plaintext() = default;
 
-            Plaintext(const Plaintext &copy) = default;
+            HE_Plaintext(const HE_Plaintext &copy) = default;
 
-            Plaintext(Plaintext &&copy) = default;
+            HE_Plaintext(HE_Plaintext &&copy) = default;
 
-            Plaintext &operator =(const Plaintext &in) = default;
+            HE_Plaintext &operator =(const HE_Plaintext &in) = default;
 
-            Plaintext &operator =(Plaintext &&in) = default;
+            HE_Plaintext &operator =(HE_Plaintext &&in) = default;
 
         private:
-            std::unique_ptr<seal::Plaintext> plaintext_;
+            // Library specific data structures
         };
 
-        class Ciphertext
+        class HE_Ciphertext
         {
         public:
-            Ciphertext() = default;
+            HE_Ciphertext() = default;
 
-            ~Ciphertext() = default;
+            ~HE_Ciphertext() = default;
 
-            Ciphertext(const Ciphertext &copy) = default;
+            HE_Ciphertext(const HE_Ciphertext &copy) = default;
 
-            Ciphertext(Ciphertext &&copy) = default;
+            HE_Ciphertext(HE_Ciphertext &&copy) = default;
 
-            Ciphertext &operator =(const Ciphertext &in) = default;
+            HE_Ciphertext &operator =(const HE_Ciphertext &in) = default;
 
-            Ciphertext &operator =(Ciphertext &&in) = default;
+            HE_Ciphertext &operator =(HE_Ciphertext &&in) = default;
 
             std::string get_key_id() const;
 
         private:
-            std::unique_ptr<seal::Ciphertext> ciphertext_;
+            // Library specific data structures
         };
 
-        class HEContext
+        class HE_Context
         {
         public:
-            HEContext() = default;
-
+            HE_Context() = default;
 /*
 {
     library_id: "SEAL v2.3",
@@ -80,67 +73,70 @@ namespace seal
             std::string keygen_sk_pk();
 
             void serialize_sk_to_file(std::string key_id, std::string filename) const;
-            void serialize_pk_to_file(std::string key_id, std::string filename) const;
             void serialize_sk_to_str(std::string key_id, std::string &out) const;
-            void serialize_pk_to_str(std::string key_id, std::string &out) const;
             void deserialize_sk_from_file(std::string filename);
-            void deserialize_pk_from_file(std::string filename);
             void deserialize_sk_from_str(std::string in);
+
+            void serialize_pk_to_file(std::string key_id, std::string filename) const;
+            void serialize_pk_to_str(std::string key_id, std::string &out) const;
+            void deserialize_pk_from_file(std::string filename);
             void deserialize_pk_from_str(std::string in);
+
+            void serialize_ciphertext_to_file(const HE_Ciphertext &in, std::string filename) const;
+            void serialize_ciphertext_to_str(const HE_Ciphertext &in, std::string &out) const;
+            void deserialize_ciphertext_from_file(std::string filename, HE_Ciphertext &out) const;
+            void deserialize_ciphertext_from_str(std::string in, HE_Ciphertext &out) const;
+            HE_Ciphertext deserialize_ciphertext_from_file(std::string filename) const;
+            HE_Ciphertext deserialize_ciphertext_from_str(std::string in) const;
+
+            void serialize_plaintext_to_file(const HE_Plaintext &in, std::string filename) const;
+            void serialize_plaintext_to_str(const HE_Plaintext &in, std::string &out) const;
+            void deserialize_plaintext_from_file(std::string filename, HE_Plaintext &out) const;
+            void deserialize_plaintext_from_str(std::string in, HE_Plaintext &out) const;
+            HE_Plaintext deserialize_plaintext_from_file(std::string filename) const;
+            HE_Plaintext deserialize_plaintext_from_str(std::string in) const;
 
             bool sk_loaded() const;
             bool pk_loaded() const;
 
-            void encrypt(const Plaintext &in, Ciphertext &out) const;
-            Ciphertext encrypt(const Plaintext &in) const;
+            void encrypt(const HE_Plaintext &in, HE_Ciphertext &out) const;
+            HE_Ciphertext encrypt(const HE_Plaintext &in) const;
 
-            void decrypt(const Ciphertext &in, Plaintext &out) const;
-            Plaintext decrypt(const Ciphertext &in) const;
+            void decrypt(const HE_Ciphertext &in, HE_Plaintext &out) const;
+            HE_Plaintext decrypt(const HE_Ciphertext &in) const;
 
             // Homomorphic operations
-            bool keygen_multk(std::string key_id);
+            void eval_add(const HE_Ciphertext &in1, const HE_Ciphertext &in2, HE_Ciphertext &out) const;
+            void eval_add(const HE_Ciphertext &in1, const HE_Plaintext &in2, HE_Ciphertext &out) const;
+            void eval_add(const HE_Plaintext &in1, const HE_Ciphertext &in2, HE_Ciphertext &out) const;
+            HE_Ciphertext eval_add(const HE_Ciphertext &in1, const HE_Ciphertext &in2) const;
+            HE_Ciphertext eval_add(const HE_Ciphertext &in1, const HE_Plaintext &in2) const;
+            HE_Ciphertext eval_add(const HE_Plaintext &in1, const HE_Ciphertext &in2) const;
 
-            void serialize_multk_to_file(std::string filename) const;
-            void serialize_multk_to_str(std::string &out) const;
-            void deserialize_multk_from_file(std::string filename);
-            void deserialize_multk_from_str(std::string in);
+            void eval_sub(const HE_Ciphertext &in1, const HE_Ciphertext &in2, HE_Ciphertext &out) const;
+            void eval_sub(const HE_Ciphertext &in1, const HE_Plaintext &in2, HE_Ciphertext &out) const;
+            void eval_sub(const HE_Plaintext &in1, const HE_Ciphertext &in2, HE_Ciphertext &out) const;
+            HE_Ciphertext eval_sub(const HE_Ciphertext &in1, const HE_Ciphertext &in2) const;
+            HE_Ciphertext eval_sub(const HE_Ciphertext &in1, const HE_Plaintext &in2) const;
+            HE_Ciphertext eval_sub(const HE_Plaintext &in1, const HE_Ciphertext &in2) const;
 
-            void eval_add(const Ciphertext &in1, const Ciphertext &in2, Ciphertext &out) const;
-            void eval_add(const Ciphertext &in1, const Plaintext &in2, Ciphertext &out) const;
-            void eval_add(const Plaintext &in1, const Ciphertext &in2, Ciphertext &out) const;
-            Ciphertext eval_add(const Ciphertext &in1, const Ciphertext &in2) const;
-            Ciphertext eval_add(const Ciphertext &in1, const Plaintext &in2) const;
-            Ciphertext eval_add(const Plaintext &in1, const Ciphertext &in2) const;
+            void eval_negate(const HE_Ciphertext &in, HE_Ciphertext &out) const;
+            HE_Ciphertext eval_negate(const HE_Ciphertext &in) const;
 
-            void eval_sub(const Ciphertext &in1, const Ciphertext &in2, Ciphertext &out) const;
-            void eval_sub(const Ciphertext &in1, const Plaintext &in2, Ciphertext &out) const;
-            void eval_sub(const Plaintext &in1, const Ciphertext &in2, Ciphertext &out) const;
-            Ciphertext eval_sub(const Ciphertext &in1, const Ciphertext &in2) const;
-            Ciphertext eval_sub(const Ciphertext &in1, const Plaintext &in2) const;
-            Ciphertext eval_sub(const Plaintext &in1, const Ciphertext &in2) const;
+            void eval_mult(const HE_Ciphertext &in1, const HE_Ciphertext &in2, HE_Ciphertext &out) const;
+            void eval_mult(const HE_Ciphertext &in1, const HE_Plaintext &in2, HE_Ciphertext &out) const;
+            void eval_mult(const HE_Plaintext &in1, const HE_Ciphertext &in2, HE_Ciphertext &out) const;
+            HE_Ciphertext eval_mult(const HE_Ciphertext &in1, const HE_Ciphertext &in2) const;
+            HE_Ciphertext eval_mult(const HE_Ciphertext &in1, const HE_Plaintext &in2) const;
+            HE_Ciphertext eval_mult(const HE_Plaintext &in1, const HE_Ciphertext &in2) const;
 
-            void eval_negate(const Ciphertext &in, Ciphertext &out) const;
-            Ciphertext eval_negate(const Ciphertext &in) const;
-
-            void eval_mult(const Ciphertext &in1, const Ciphertext &in2, Ciphertext &out) const;
-            void eval_mult(const Ciphertext &in1, const Plaintext &in2, Ciphertext &out) const;
-            void eval_mult(const Plaintext &in1, const Ciphertext &in2, Ciphertext &out) const;
-            Ciphertext eval_mult(const Ciphertext &in1, const Ciphertext &in2) const;
-            Ciphertext eval_mult(const Ciphertext &in1, const Plaintext &in2) const;
-            Ciphertext eval_mult(const Plaintext &in1, const Ciphertext &in2) const;
+            void serialize_context_to_file(std::string filename) const;
+            void serialize_context_to_str(std::string &out) const;
+            void deserialize_context_from_file(std::string filename);
+            void deserialize_context_from_str(std::string in);
 
         private:
-            std::unique_ptr<EncryptionParameters> parms_;
-
-            std::unique_ptr<SEALContext> context_;
-
-            std::unique_ptr<KeyGenerator> keygen_;
-
-            std::unique_ptr<SecretKey> secret_key_;
-
-            std::unique_ptr<PublicKey> public_key_;
-
-            std::unique_ptr<Encryptor> encryptor_;
+            // Library specific data structures
         };
     }
 }
