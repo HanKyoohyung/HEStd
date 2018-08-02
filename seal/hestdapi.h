@@ -106,6 +106,9 @@ namespace seal
             HE_Plaintext decrypt(const HE_Ciphertext &in) const;
 
             // Homomorphic operations
+			// TODO: commutative?
+			// TODO: In-place operations should be supported
+			// TODO: Using a suffix for in-place operations?
             void eval_add(const HE_Ciphertext &in1, const HE_Ciphertext &in2, HE_Ciphertext &out) const;
             void eval_add(const HE_Ciphertext &in1, const HE_Plaintext &in2, HE_Ciphertext &out) const;
             void eval_add(const HE_Plaintext &in1, const HE_Ciphertext &in2, HE_Ciphertext &out) const;
