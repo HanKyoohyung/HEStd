@@ -1,0 +1,37 @@
+Global functions
+
+Context* ReadContext(stream)
+Context* CreateContextFromProfile(stream) 
+
+CONTEXT CLASS
+
+bool WriteContext(stream)
+WriteProfile(stream)
+
+keyID KeyGen() // secret and public keys are generated
+keyID KeyGenSK()
+KeyGenPK(keyID)
+
+keyID ReadSK(stream)
+WriteSK(keyID,stream)
+keyID ReadPK(stream)
+WritePK(stream)
+
+bool ReadCiphertext(stream, Ciphertext*)
+bool WriteCiphertext(Ciphertext*, stream)
+bool ReadPlaintext(stream, Plaintext*)
+bool WritePlaintext(Plaintext*, stream)
+
+Encrypt(keyID, Plaintext* in, Ciphertext* out) 
+Decrypt(Ciphertext* in, Plaintext* out)
+
+EvalAdd(Ciphertext* in1, Ciphertext* in2, Ciphertext* out)
+EvalAdd(Ciphertext* in1, Plaintext* in2, Ciphertext* out)
+
+EvalSub(Ciphertext* in1, Ciphertext* in2, Ciphertext* out)
+EvalSub(Ciphertext* in1, Plaintext* in2, Ciphertext* out)
+
+EvalNeg(Ciphertext* in, Ciphertext* out)
+
+EvalMul(Ciphertext* in1, Ciphertext* in2, Ciphertext* out)
+EvalMul(Ciphertext* in1, Plaintext* in2, Ciphertext* out)

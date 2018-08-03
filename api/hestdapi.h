@@ -50,19 +50,7 @@ namespace seal
         {
         public:
             HE_Context() = default;
-/*
-{
-    library_id: "SEAL v2.3",
-    library_descriptor: ...,
-    param_id: "custom/hestd128_cyclotomic_8192_SEAL_1",
-    library_dep:
-        {
-            plain_modulus: ...
-            use_memory_pool: true
-            coeff_modulus: [ 0x123451, 0x132412341 ]
-        }
-}
-*/
+
             void load_profile(std::string filename);
 
             std::string param_id() const;
