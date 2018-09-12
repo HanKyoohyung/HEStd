@@ -26,66 +26,83 @@ namespace hestdapi
         HEStdContext &operator =(const HEStdContext &) = delete;
         HEStdContext &operator =(HEStdContext &&) = default;
 
-        // Generate public and secret key
+        /**
+        Generate public and secret key.
+        */
         KeyIDType keyGen();
 
-        // Generate only secret key
+        /**
+        Generate only secret key.
+        */
         KeyIDType keyGenSK();
 
-        // Generate public key from secret key
+        /**
+        Generate public key from secret key and potentially also
+        evaluation keys.
+        */
         void keyGenPK(KeyIDType keyID);
 
-        // Read and write secret key
+        /**
+        Read and write secret key.
+        */
         KeyIDType readSK(std::ifstream stream);
         void writeSK(KeyIDType keyID, std::ofstream stream);
         KeyIDType readPK(std::ifstream stream);
         void writePK(KeyIDType keyID, std::ofstream stream);
 
-        // Read and write ciphertext
+        /**
+        Read and write ciphertext.
+        */
         bool readCiphertext(std::ifstream stream, 
             std::shared_ptr<seal::Ciphertext> ctxt);
-        bool writeCiphertext(std::shared_ptr<seal::Ciphertext> ctxt, 
+        bool writeCiphertext(std::shared_ptr<const seal::Ciphertext> ctxt,
             std::ofstream stream);
 
-        // Read and write plaintext
+        /**
+        Read and write plaintext.
+        */
         bool readPlaintext(std::ifstream stream,
             std::shared_ptr<seal::Plaintext> ptxt);
-        bool writePlaintext(std::shared_ptr<seal::Plaintext> ptxt,
+        bool writePlaintext(std::shared_ptr<const seal::Plaintext> ptxt,
             std::ofstream stream);
 
-        // Encryption and decryption
+        /**
+        Encryption and decryption.
+        */
         void encrypt(KeyIDType keyID,
-            std::shared_ptr<seal::Plaintext> ptxt_in,
-            std::shared_ptr<seal::Ciphertext> ctxt_out);
-        void decrypt(std::shared_ptr<seal::Ciphertext> ctxt_in,
-            std::shared_ptr<seal::Plaintext> ptxt_out);
+            std::shared_ptr<const seal::Plaintext> ptxtIn,
+            std::shared_ptr<seal::Ciphertext> ctxtOut);
+        void decrypt(std::shared_ptr<const seal::Ciphertext> ctxtIn,
+            std::shared_ptr<seal::Plaintext> ptxtOut);
 
-        // Homomorphic computations
-        void evalAdd(std::shared_ptr<seal::Ciphertext> ctxt_in1,
-            std::shared_ptr<seal::Ciphertext> ctxt_in2,
-            std::shared_ptr<seal::Ciphertext> ctxt_out);
-        void evalAdd(std::shared_ptr<seal::Ciphertext> ctxt_in1,
-            std::shared_ptr<seal::Plaintext> ptxt_in2,
-            std::shared_ptr<seal::Ciphertext> ctxt_out);
-        void evalSub(std::shared_ptr<seal::Ciphertext> ctxt_in1,
-            std::shared_ptr<seal::Ciphertext> ctxt_in2,
-            std::shared_ptr<seal::Ciphertext> ctxt_out);
-        void evalSub(std::shared_ptr<seal::Ciphertext> ctxt_in1,
-            std::shared_ptr<seal::Plaintext> ptxt_in2,
-            std::shared_ptr<seal::Ciphertext> ctxt_out);
-        void evalNeg(std::shared_ptr<seal::Ciphertext> ctxt_in,
-            std::shared_ptr<seal::Ciphertext> ctxt_out);
-        void evalMul(std::shared_ptr<seal::Ciphertext> ctxt_in1,
-            std::shared_ptr<seal::Ciphertext> ctxt_in2,
-            std::shared_ptr<seal::Ciphertext> ctxt_out);
-        void evalMul(std::shared_ptr<seal::Ciphertext> ctxt_in1,
-            std::shared_ptr<seal::Plaintext> ptxt_in2,
-            std::shared_ptr<seal::Ciphertext> ctxt_out);
+        /**
+        Homomorphic computations.
+        */
+        void evalAdd(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
+            std::shared_ptr<const seal::Ciphertext> ctxtIn2,
+            std::shared_ptr<seal::Ciphertext> ctxtOut);
+        void evalAdd(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
+            std::shared_ptr<const seal::Plaintext> ptxtIn2,
+            std::shared_ptr<seal::Ciphertext> ctxtOut);
+        void evalSub(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
+            std::shared_ptr<const seal::Ciphertext> ctxtIn2,
+            std::shared_ptr<seal::Ciphertext> ctxtOut);
+        void evalSub(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
+            std::shared_ptr<const seal::Plaintext> ptxtIn2,
+            std::shared_ptr<seal::Ciphertext> ctxtOut);
+        void evalNeg(std::shared_ptr<const seal::Ciphertext> ctxtIn,
+            std::shared_ptr<seal::Ciphertext> ctxtOut);
+        void evalMul(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
+            std::shared_ptr<const seal::Ciphertext> ctxtIn2,
+            std::shared_ptr<seal::Ciphertext> ctxtOut);
+        void evalMul(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
+            std::shared_ptr<const seal::Plaintext> ptxtIn2,
+            std::shared_ptr<seal::Ciphertext> ctxtOut);
 
     private:
         std::shared_ptr<seal::SEALContext> context_;
     };
 
-    std::shared_ptr<Context> readContext(std::ifstream stream);
-    std::shared_ptr<Context> createContextFromProfile(std::ifstream stream);
+    std::shared_ptr<HEStdContext> readContext(std::ifstream stream);
+    std::shared_ptr<HEStdContext> createContextFromProfile(std::ifstream stream);
 }
