@@ -56,20 +56,9 @@ namespace hestdapi
         bool writeProfile(std::ofstream stream);
 
         /**
-        Generate public and secret key.
+        Generate public and secret key (depending on mode: symmetric or asymmetric)
         */
         KeyIDType keyGen();
-
-        /**
-        Generate only secret key.
-        */
-        KeyIDType keyGenSK();
-
-        /**
-        Generate public key from secret key and potentially also
-        evaluation keys.
-        */
-        void keyGenPK(ConstKeyIDType keyID);
 
         /**
         Read and write secret key.
@@ -125,8 +114,7 @@ namespace hestdapi
         palisade::CryptoContext m_cc;
     };
 
-    std::shared_ptr<HEStdContext> readContext(std::ifstream stream);
-    std::shared_ptr<HEStdContext> createContextFromProfile(std::ifstream stream);
+    std::shared_ptr<HEStdContext> createContextFromProfile(std::ifstream stream, const string &userProfile);
 
 }
 
