@@ -52,7 +52,7 @@ namespace hestdapi
         //Write context
         bool writeContext(std::ofstream stream);
 
-        //Wrote configuration profile
+        //Write configuration profile
         bool writeProfile(std::ofstream stream);
 
         /**
