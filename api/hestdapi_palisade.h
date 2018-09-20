@@ -46,6 +46,8 @@ namespace hestdapi
         HEStdContext(HEStdContext &&) = default;
         HEStdContext &operator =(const HEStdContext &) = delete;
         HEStdContext &operator =(HEStdContext &&) = default;
+		
+		HEStdContext(std::ifstream stream, const string &userProfile);
 
         /**
         Generate public and secret key (depending on mode: symmetric or asymmetric)
@@ -82,25 +84,25 @@ namespace hestdapi
         Homomorphic computations.
         */
         void evalAdd(palisade::ConstCiphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2, palisade::Ciphertext ctxtOut);
-        void evalAddInPlace(palisade::Ciphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2);
+        void evalAddInplace(palisade::Ciphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2);
 
         void evalAdd(palisade::ConstCiphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2,  palisade::Ciphertext ctxtOut);
-        void evalAddInPlace(palisade::Ciphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2);
+        void evalAddInplace(palisade::Ciphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2);
 
         void evalSub(palisade::ConstCiphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2, palisade::Ciphertext ctxtOut);
-        void evalSubInPlace(palisade::Ciphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2);
+        void evalSubInplace(palisade::Ciphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2);
 
         void evalSub(palisade::ConstCiphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2, palisade::Ciphertext ctxtOut);
-        void evalSubInPlace(palisade::Ciphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2);
+        void evalSubInplace(palisade::Ciphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2);
 
         void evalNeg(palisade::ConstCiphertext ctxtIn,  palisade::Ciphertext ctxtOut);
-        void evalNegInPlace(palisade::Ciphertext ctxtIn);
+        void evalNegInplace(palisade::Ciphertext ctxtIn);
 
         void evalMul(palisade::ConstCiphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2, palisade::Ciphertext ctxtOut);
-        void evalMulInPlace(palisade::Ciphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2);
+        void evalMulInplace(palisade::Ciphertext ctxtIn1, palisade::ConstCiphertext ctxtIn2);
 
         void evalMul(palisade::ConstCiphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2,  palisade::Ciphertext ctxtOut);
-        void evalMulInPlace(palisade::Ciphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2);
+        void evalMulInplace(palisade::Ciphertext ctxtIn1, palisade::ConstPlaintext ptxtIn2);
 
     private:
         palisade::CryptoContext m_cc;
