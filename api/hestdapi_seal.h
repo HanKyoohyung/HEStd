@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <utility>
 #include <random>
+#include <string>
 
 // SEAL includes
 #include "seal/context.h"
@@ -22,8 +23,8 @@ namespace hestdapi
 
     class HEStdContext
     {
-        friend std::shared_ptr<HEStdContext> readContext(std::ifstream);
-        friend std::shared_ptr<HEStdContext> createContextFromProfile(std::ifstream);
+        friend std::shared_ptr<HEStdContext> 
+		    CreateContextFromProfile(std::ifstream, std::string);
 
     public:
         /**
@@ -54,7 +55,7 @@ namespace hestdapi
         }
 
         /**
-        Generate public and secret key.
+        Generate public and secret key according to configuration profile.
         */
         KeyIDType keyGen() 
         {
@@ -73,37 +74,6 @@ namespace hestdapi
             {
                 throw std::runtime_error("failed to insert key");
             }
-        }
-
-        /**
-        Generate only secret key.
-        */
-        KeyIDType keyGenSK()
-        {
-            seal::KeyGenerator keygen(context_);
-            auto key_pair = std::make_pair(
-                std::shared_ptr<seal::SecretKey>(new seal::SecretKey),
-                std::shared_ptr<seal::PublicKey>(nullptr));
-            *key_pair.first = keygen.secret_key();
-
-            std::random_device rd;
-            KeyIDType key_id = (static_cast<KeyIDType>(rd()) << 32) +
-                static_cast<KeyIDType>(rd());
-
-            if (!key_map_.emplace(key_id, key_pair).second)
-            {
-                throw std::runtime_error("failed to insert key");
-            }
-            return key_id;
-        }
-
-        /**
-        Generate public key from secret key and potentially also
-        evaluation keys.
-        */
-        void keyGenPK(KeyIDType keyID)
-        {
-            throw std::runtime_error("not implemented");
         }
 
         /**
@@ -188,7 +158,8 @@ namespace hestdapi
         void encrypt(KeyIDType keyID,
             std::shared_ptr<const seal::Plaintext> ptxtIn,
             std::shared_ptr<seal::Ciphertext> ctxtOut);
-        void decrypt(std::shared_ptr<const seal::Ciphertext> ctxtIn,
+        void decrypt(KeyIDType keyID, 
+		    std::shared_ptr<const seal::Ciphertext> ctxtIn,
             std::shared_ptr<seal::Plaintext> ptxtOut);
 
         /**
@@ -226,6 +197,6 @@ namespace hestdapi
         std::shared_ptr<seal::Decryptor> decryptor_{ nullptr };
     };
     
-    std::shared_ptr<HEStdContext> readContext(std::ifstream stream);
-    std::shared_ptr<HEStdContext> createContextFromProfile(std::ifstream stream);
+    std::shared_ptr<HEStdContext> 
+	    CreateContextFromProfile(std::ifstream stream, std::string profileID);
 }
