@@ -58,15 +58,15 @@ namespace hestdapi
         /**
         Generate public and secret key (depending on mode: symmetric or asymmetric)
         */
-        KeyIDType keyGen();
+        void keyGen();
 
         /**
         Read and write secret key.
         */
-        KeyIDType readSK(std::ifstream stream);
-        void writeSK(ConstKeyIDType  keyID, std::ofstream stream);
-        KeyIDType readPK(std::ifstream stream);
-        void writePK(ConstKeyIDType  keyID, std::ofstream stream);
+        void readSK(std::ifstream stream);
+        void writeSK(std::ofstream stream);
+        void readPK(std::ifstream stream);
+        void writePK(std::ofstream stream);
 
         /**
         Read and write ciphertext.
