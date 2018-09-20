@@ -32,8 +32,6 @@
 
 namespace hestdapi
 {
-    using KeyIDType = string;
-    using ConstKeyIDType = const string &;
     namespace palisade = lbcrypto;
 
     class HEStdContext
@@ -83,7 +81,7 @@ namespace hestdapi
         /**
         Encryption and decryption.
         */
-        void encrypt(ConstKeyIDType keyID, palisade::ConstPlaintext ptxtIn, palisade::Ciphertext ctxtOut);
+        void encrypt(palisade::ConstPlaintext ptxtIn, palisade::Ciphertext ctxtOut);
         void decrypt(palisade::ConstCiphertext ctxtIn, palisade::Plaintext ptxtOut);
 
         /**
