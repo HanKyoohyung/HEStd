@@ -1,9 +1,7 @@
-Global functions
-
-Context* ReadContext(stream)
-Context* CreateContextFromProfile(stream) 
-
 CONTEXT CLASS
+
+Constructor:
+HEStdContext(stream, stringo profile_id)
 
 bool WriteContext(stream)
 WriteProfile(stream)
