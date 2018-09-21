@@ -2,9 +2,7 @@
 
 #include <memory>
 #include <fstream>
-#include <unordered_map>
 #include <utility>
-#include <random>
 #include <string>
 
 // SEAL includes
@@ -17,21 +15,21 @@
 #include "seal/evaluator.h"
 #include "seal/keygenerator.h"
 
-namespace hestdapi
+namespace hestd
 {
-    using KeyIDType = std::uint64_t;
-
     class HEStdContext
     {
-        friend std::shared_ptr<HEStdContext> 
-		    CreateContextFromProfile(std::ifstream, std::string);
-
     public:
+        using Plaintext = std::shared_ptr<seal::Plaintext>;
+        using Ciphertext = std::shared_ptr<seal::Ciphertext>;
+        using ConstPlaintext = const std::shared_ptr<const seal::Plaintext>;
+        using ConstCiphertext = const std::shared_ptr<const seal::Ciphertext>;
+
         /**
-        Context class instances should be created using readContext and 
-        createContextFromProfile functions.
+        Creating a context from configuration profile
         */
-        HEStdContext() = delete;
+        HEStdContext(std::ifstream &stream, std::string profile_id);
+
         HEStdContext(const HEStdContext &) = delete;
         HEStdContext(HEStdContext &&) = default;
         HEStdContext &operator =(const HEStdContext &) = delete;
@@ -42,7 +40,7 @@ namespace hestdapi
         */
         HEStdContext(const seal::EncryptionParameters &parms) :
             context_(seal::SEALContext::Create(parms)),
-            evaluator_(new seal::Evaluator{ context_ })
+            evaluator_(new seal::Evaluator(context_))
         {
             if (parms.scheme() != seal::scheme_type::BFV)
             {
@@ -57,146 +55,163 @@ namespace hestdapi
         /**
         Generate public and secret key according to configuration profile.
         */
-        KeyIDType keyGen() 
+        void keyGen()
         {
             seal::KeyGenerator keygen(context_);
-            auto key_pair = std::make_pair(
-                std::shared_ptr<seal::SecretKey>(new seal::SecretKey), 
-                std::shared_ptr<seal::PublicKey>(new seal::PublicKey));
-            *key_pair.first = keygen.secret_key();
-            *key_pair.second = keygen.public_key();
-            
-            std::random_device rd;
-            KeyIDType key_id = (static_cast<KeyIDType>(rd()) << 32) +
-                static_cast<KeyIDType>(rd());
-
-            if (!key_map_.emplace(key_id, key_pair).second)
-            {
-                throw std::runtime_error("failed to insert key");
-            }
+            sk_.reset(new seal::SecretKey);
+            pk_.reset(new seal::PublicKey);
+            *sk_ = keygen.secret_key();
+            *pk_ = keygen.public_key();
+            encryptor_.reset(new seal::Encryptor(context_, *pk_));
+            decryptor_.reset(new seal::Decryptor(context_, *sk_));
         }
 
         /**
         Read and write secret key.
         */
-        KeyIDType readSK(std::ifstream stream)
+        void readSK(std::ifstream &stream)
         {
-            auto key_pair = std::make_pair(
-                std::shared_ptr<seal::SecretKey>(new seal::SecretKey),
-                std::shared_ptr<seal::PublicKey>(nullptr));
-
-            KeyIDType key_id;
-            stream.read(reinterpret_cast<char*>(&key_id), sizeof(key_id));
-            key_pair.first->load(stream);
-
-            auto key_pair_iter = key_map_.find(key_id);
-            if (key_pair_iter == key_map_.end())
-            {
-                if (!key_map_.emplace(key_id, key_pair).second)
-                {
-                    throw std::runtime_error("failed to insert key");
-                }
-            }
-            else
-            {
-                throw std::runtime_error("key for this keyID is already loaded");
-            }
-            return key_id;
+            sk_->load(stream);
+            decryptor_.reset(new seal::Decryptor(context_, *sk_));
         }
 
-        void writeSK(KeyIDType keyID, std::ofstream stream)
+        void writeSK(std::ofstream &stream)
         {
-            auto key_pair_iter = key_map_.find(keyID);
-            if (key_pair_iter == key_map_.end())
-            {
-                throw std::invalid_argument("failed to find key");
-            }
-            if (!key_pair_iter->second.first)
-            {
-                throw std::invalid_argument("secret key does not exist for this keyID");
-            }
-            stream.write(reinterpret_cast<const char*>(&keyID), sizeof(keyID));
-            key_pair_iter->second.first->save(stream);
+            sk_->save(stream);
         }
 
-        KeyIDType readPK(std::ifstream stream);
-
-        void writePK(KeyIDType keyID, std::ofstream stream)
+        void readPK(std::ifstream &stream)
         {
-            auto key_pair_iter = key_map_.find(keyID);
-            if (key_pair_iter == key_map_.end())
-            {
-                throw std::invalid_argument("failed to find key");
-            }
-            if (!key_pair_iter->second.second)
-            {
-                throw std::invalid_argument("public key does not exist for this keyID");
-            }
-            stream.write(reinterpret_cast<const char*>(&keyID), sizeof(keyID));
-            key_pair_iter->second.second->save(stream);
+            pk_->load(stream);
+            encryptor_.reset(new seal::Encryptor(context_, *pk_));
+        }
+
+        void writePK(std::ofstream &stream)
+        {
+            pk_->save(stream);
         }
 
         /**
         Read and write ciphertext.
         */
-        bool readCiphertext(std::ifstream stream, 
-            std::shared_ptr<seal::Ciphertext> ctxt);
-        bool writeCiphertext(std::shared_ptr<const seal::Ciphertext> ctxt,
-            std::ofstream stream);
+        void readCiphertext(std::ifstream &stream, Ciphertext ctxt)
+        {
+            ctxt->load(stream);
+        }
+
+        void writeCiphertext(ConstCiphertext ctxt, std::ofstream &stream)
+        {
+            ctxt->save(stream);
+        }
 
         /**
         Read and write plaintext.
         */
-        bool readPlaintext(std::ifstream stream,
-            std::shared_ptr<seal::Plaintext> ptxt);
-        bool writePlaintext(std::shared_ptr<const seal::Plaintext> ptxt,
-            std::ofstream stream);
+        void readPlaintext(std::ifstream &stream, Plaintext ptxt)
+        {
+            ptxt->load(stream);
+        }
+
+        void writePlaintext(ConstPlaintext ptxt, std::ofstream stream)
+        {
+            ptxt->save(stream);
+        }
 
         /**
         Encryption and decryption.
         */
-        void encrypt(KeyIDType keyID,
-            std::shared_ptr<const seal::Plaintext> ptxtIn,
-            std::shared_ptr<seal::Ciphertext> ctxtOut);
-        void decrypt(KeyIDType keyID, 
-		    std::shared_ptr<const seal::Ciphertext> ctxtIn,
-            std::shared_ptr<seal::Plaintext> ptxtOut);
+        void encrypt(ConstPlaintext ptxtIn, Ciphertext ctxtOut)
+        {
+            encryptor_->encrypt(*ptxtIn, *ctxtOut);
+        }
+
+        void decrypt(ConstCiphertext ctxtIn, Plaintext ptxtOut)
+        {
+            decryptor_->decrypt(*ctxtIn, *ptxtOut);
+        }
 
         /**
         Homomorphic computations.
         */
-        void evalAdd(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
-            std::shared_ptr<const seal::Ciphertext> ctxtIn2,
-            std::shared_ptr<seal::Ciphertext> ctxtOut);
-        void evalAdd(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
-            std::shared_ptr<const seal::Plaintext> ptxtIn2,
-            std::shared_ptr<seal::Ciphertext> ctxtOut);
-        void evalSub(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
-            std::shared_ptr<const seal::Ciphertext> ctxtIn2,
-            std::shared_ptr<seal::Ciphertext> ctxtOut);
-        void evalSub(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
-            std::shared_ptr<const seal::Plaintext> ptxtIn2,
-            std::shared_ptr<seal::Ciphertext> ctxtOut);
-        void evalNeg(std::shared_ptr<const seal::Ciphertext> ctxtIn,
-            std::shared_ptr<seal::Ciphertext> ctxtOut);
-        void evalMul(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
-            std::shared_ptr<const seal::Ciphertext> ctxtIn2,
-            std::shared_ptr<seal::Ciphertext> ctxtOut);
-        void evalMul(std::shared_ptr<const seal::Ciphertext> ctxtIn1,
-            std::shared_ptr<const seal::Plaintext> ptxtIn2,
-            std::shared_ptr<seal::Ciphertext> ctxtOut);
+        void evalAdd(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut)
+        {
+            evaluator_->add(*ctxtIn1, *ctxtIn2, *ctxtOut);
+        }
+
+        void evalAddInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2)
+        {
+            evaluator_->add(*ctxtIn1, *ctxtIn2);
+        }
+
+        void evalAdd(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2, Ciphertext ctxtOut)
+        {
+            evaluator_->add_plain(*ctxtIn1, *ptxtIn2, *ctxtOut);
+        }
+
+        void evalAddInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2)
+        {
+            evaluator_->add_plain(*ctxtIn1, *ptxtIn2);
+        }
+
+        void evalSub(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut)
+        {
+            evaluator_->sub(*ctxtIn1, *ctxtIn2, *ctxtOut);
+        }
+
+        void evalSubInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2)
+        {
+            evaluator_->sub(*ctxtIn1, *ctxtIn2);
+        }
+
+        void evalSub(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2, Ciphertext ctxtOut)
+        {
+            evaluator_->sub_plain(*ctxtIn1, *ptxtIn2, *ctxtOut);
+
+        }
+
+        void evalSubInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2)
+        {
+            evaluator_->sub_plain(*ctxtIn1, *ptxtIn2);
+        }
+
+        void evalNeg(ConstCiphertext ctxtIn, Ciphertext ctxtOut)
+        {
+            evaluator_->negate(*ctxtIn, *ctxtOut);
+        }
+
+        void evalNegInplace(Ciphertext ctxtIn)
+        {
+            evaluator_->negate(*ctxtIn);
+        }
+
+        void evalMul(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut)
+        {
+            evaluator_->multiply(*ctxtIn1, *ctxtIn2, *ctxtOut);
+
+        }
+
+        void evalMulInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2)
+        {
+            evaluator_->multiply(*ctxtIn1, *ctxtIn2);
+        }
+
+        void evalMul(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2, Ciphertext ctxtOut)
+        {
+            evaluator_->multiply_plain(*ctxtIn1, *ptxtIn2, *ctxtOut);
+        }
+
+        void evalMulInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2)
+        {
+            evaluator_->multiply_plain(*ctxtIn1, *ptxtIn2);
+        }
 
     private:
         std::shared_ptr<seal::SEALContext> context_{ nullptr };
-        std::shared_ptr<seal::RelinKeys> relin_keys_{ nullptr };
-        std::unordered_map<KeyIDType,
-            std::pair<std::shared_ptr<seal::SecretKey>, 
-            std::shared_ptr<seal::PublicKey> > > key_map_{};
+        std::shared_ptr<seal::RelinKeys> rlk_{ nullptr };
+        std::shared_ptr<seal::SecretKey> sk_{ nullptr };
+        std::shared_ptr<seal::PublicKey> pk_{ nullptr };
         std::shared_ptr<seal::Evaluator> evaluator_{ nullptr };
         std::shared_ptr<seal::Encryptor> encryptor_{ nullptr };
         std::shared_ptr<seal::Decryptor> decryptor_{ nullptr };
     };
-    
-    std::shared_ptr<HEStdContext> 
-	    CreateContextFromProfile(std::ifstream stream, std::string profileID);
 }
