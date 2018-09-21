@@ -1,35 +1,43 @@
 CONTEXT CLASS
 
 Constructor:
-HEStdContext(stream, stringo profile_id)
+HEStdContext(stream, string profile_id)
 
 bool WriteContext(stream)
 WriteProfile(stream)
 
 keyID KeyGen() // secret and public keys are generated
-keyID KeyGenSK()
-KeyGenPK(keyID)
 
-keyID ReadSK(stream)
-WriteSK(keyID,stream)
-keyID ReadPK(stream)
+ReadSK(stream)
+WriteSK(stream)
+ReadPK(stream)
 WritePK(stream)
 
 bool ReadCiphertext(stream, Ciphertext*)
-bool WriteCiphertext(Ciphertext*, stream)
+bool WriteCiphertext(ConstCiphertext*, stream)
+
 bool ReadPlaintext(stream, Plaintext*)
-bool WritePlaintext(Plaintext*, stream)
+bool WritePlaintext(ConstPlaintext*, stream)
 
-Encrypt(keyID, Plaintext* in, Ciphertext* out) 
-Decrypt(Ciphertext* in, Plaintext* out)
+Encrypt(ConstPlaintext* in, Ciphertext* out) 
+Decrypt(ConstCiphertext* in, Plaintext* out)
 
-EvalAdd(Ciphertext* in1, Ciphertext* in2, Ciphertext* out)
-EvalAdd(Ciphertext* in1, Plaintext* in2, Ciphertext* out)
+EvalAdd(ConstCiphertext* in1, ConstCiphertext* in2, Ciphertext* out)
+EvalAddInplace(Ciphertext* in1, ConstCiphertext* in2)
 
-EvalSub(Ciphertext* in1, Ciphertext* in2, Ciphertext* out)
-EvalSub(Ciphertext* in1, Plaintext* in2, Ciphertext* out)
+EvalAdd(ConstCiphertext* in1, ConstPlaintext* in2, Ciphertext* out)
+EvalAddInplace(Ciphertext* in1, ConstPlaintext* in2)
 
-EvalNeg(Ciphertext* in, Ciphertext* out)
+EvalSub(ConstCiphertext* in1, ConstCiphertext* in2, Ciphertext* out)
+EvalSubInplace(Ciphertext* in1, ConstCiphertext* in2)
 
-EvalMul(Ciphertext* in1, Ciphertext* in2, Ciphertext* out)
-EvalMul(Ciphertext* in1, Plaintext* in2, Ciphertext* out)
+EvalSub(ConstCiphertext* in1, ConstPlaintext* in2, Ciphertext* out)
+EvalSubInplace(Ciphertext* in1, ConstPlaintext* in2)
+
+EvalNeg(ConstCiphertext* in, Ciphertext* out)
+
+EvalMul(ConstCiphertext* in1, ConstCiphertext* in2, Ciphertext* out)
+EvalMulInplace(Ciphertext* in1, ConstCiphertext* in2)
+
+EvalMul(ConstCiphertext* in1, ConstPlaintext* in2, Ciphertext* out)
+EvalMulInplace(Ciphertext* in1, ConstPlaintext* in2)
