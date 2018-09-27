@@ -142,7 +142,11 @@ namespace hestd
         void evalNeg(ConstCiphertext ctxtIn,  Ciphertext ctxtOut);
         void evalNegInplace(Ciphertext ctxtIn);
 
-        void evalMul(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut);
+        void evalMul(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut){
+        	*ctxtOut = *(m_cc->EvalMult(ctxtIn1,ctxtIn2));
+        	return;
+        }
+
         void evalMulInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2);
 
         void evalMul(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2,  Ciphertext ctxtOut);

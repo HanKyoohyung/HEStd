@@ -22,6 +22,9 @@ int main(int argc, char *argv[]) {
 	std::vector<uint64_t> vectorOfInts2 = {12,11,10,9,8,7,6,5,4,3,2,1};
 	Plaintext plaintext2 = context.CreatePlaintext(vectorOfInts2);
 
+	std::cerr << "plaintext1 = " << *plaintext1 << std::endl;
+	std::cerr << "plaintext2 = " << *plaintext2 << std::endl;
+
 	Ciphertext ct1 = context.CreateCiphertext();
 	Ciphertext ct2 = context.CreateCiphertext();
 
@@ -33,11 +36,21 @@ int main(int argc, char *argv[]) {
 	context.evalAdd(ct1,ct2,ctAdd);
 	std::cerr << "Homomorphic addition is done..." << std::endl;
 
+	Ciphertext ctMult = context.CreateCiphertext();
+	context.evalMul(ct1,ct2,ctMult);
+	std::cerr << "Homomorphic multiplication is done..." << std::endl;
+
 	Plaintext ptAdd = context.CreatePlaintext();
 	context.decrypt(ctAdd,ptAdd);
 	std::cerr << "Decryption is done..." << std::endl;
 
-	std::cerr << "result = " << *ptAdd << std::endl;
+	std::cerr << "result after addition = " << *ptAdd << std::endl;
+
+	Plaintext ptMult = context.CreatePlaintext();
+	context.decrypt(ctMult,ptMult);
+	std::cerr << "Decryption is done..." << std::endl;
+
+	std::cerr << "result after multiplication = " << *ptMult << std::endl;
 
 	return 0;
 }
