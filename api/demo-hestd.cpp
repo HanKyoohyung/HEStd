@@ -16,6 +16,21 @@ int main(int argc, char *argv[]) {
 
 	std::cerr << "All keys have been generated..." << std::endl;
 
+	std::ofstream foutPK("demoData/pk.txt");
+	std::ofstream foutSK("demoData/sk.txt");
+	std::ifstream finPK("demoData/pk.txt");
+	std::ifstream finSK("demoData/sk.txt");
+
+	context.writePK(foutPK);
+	context.writeSK(foutSK);
+
+	std::cerr << "The public and private keys have been serialized..." << std::endl;
+
+	context.readPK(finPK);
+	context.readSK(finSK);
+
+	std::cerr << "The public and private keys have been deserialized..." << std::endl;
+
 	std::vector<uint64_t> vectorOfInts1 = {1,2,3,4,5,6,7,8,9,10,11,12};
 	Plaintext plaintext1 = context.CreatePlaintext(vectorOfInts1);
 
@@ -32,12 +47,25 @@ int main(int argc, char *argv[]) {
 	context.encrypt(plaintext2,ct2);
 	std::cerr << "Encryption is completed..." << std::endl;
 
+	std::ofstream foutCT("demoData/ct.txt");
+	std::ifstream finCT("demoData/ct.txt");
+
+	Ciphertext ct3 = context.CreateCiphertext();
+
+	context.writeCiphertext(ct1,foutCT);
+	std::cerr << "A ciphertext has been serialized..." << std::endl;
+	context.readCiphertext(finCT,ct3);
+	std::cerr << "A ciphertext has been deserialized..." << std::endl;
+
 	Ciphertext ctAdd = context.CreateCiphertext();
-	context.evalAdd(ct1,ct2,ctAdd);
+	context.evalAdd(ct3,ct2,ctAdd);
 	std::cerr << "Homomorphic addition is done..." << std::endl;
 
+	context.evalAddInplace(ct1,ct2);
+	std::cerr << "Homomorphic in-place addition is done..." << std::endl;
+
 	Ciphertext ctMult = context.CreateCiphertext();
-	context.evalMul(ct1,ct2,ctMult);
+	context.evalMul(ct3,ct2,ctMult);
 	std::cerr << "Homomorphic multiplication is done..." << std::endl;
 
 	Plaintext ptAdd = context.CreatePlaintext();
@@ -45,6 +73,12 @@ int main(int argc, char *argv[]) {
 	std::cerr << "Decryption is done..." << std::endl;
 
 	std::cerr << "result after addition = " << *ptAdd << std::endl;
+
+	Plaintext ptAddInplace = context.CreatePlaintext();
+	context.decrypt(ct1,ptAddInplace);
+	std::cerr << "Decryption is done after in-place addition..." << std::endl;
+
+	std::cerr << "result after in-place addition = " << *ptAddInplace << std::endl;
 
 	Plaintext ptMult = context.CreatePlaintext();
 	context.decrypt(ctMult,ptMult);

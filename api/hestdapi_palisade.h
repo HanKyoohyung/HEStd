@@ -90,22 +90,104 @@ namespace hestd
         /**
         Read and write secret key.
         */
-        void readSK(std::ifstream &stream);
-        void writeSK(std::ofstream &stream);
-        void readPK(std::ifstream &stream);
-        void writePK(std::ofstream &stream);
+        void readSK(std::ifstream &stream) {
+
+    		palisade::Serialized	skSer;
+    		if (palisade::SerializableHelper::StreamToSerialization(stream, &skSer) == false) {
+    			cerr << "Could not read secret key" << endl;
+    			return;
+    		}
+
+    		m_kp.secretKey = m_cc->deserializeSecretKey(skSer);
+
+        }
+
+        void writeSK(std::ofstream &stream) {
+
+        	palisade::Serialized privK;
+
+			if (m_kp.secretKey->Serialize(&privK)) {
+				if (!palisade::SerializableHelper::SerializationToStream(privK, stream)) {
+					cerr << "Error writing serialization of private key." << endl;
+					return;
+				}
+			}
+			else {
+				cerr << "Error serializing private key" << endl;
+				return;
+			}
+        }
+
+        void readPK(std::ifstream &stream) {
+
+    		palisade::Serialized	pkSer;
+    		if (palisade::SerializableHelper::StreamToSerialization(stream, &pkSer) == false) {
+    			cerr << "Could not read public key" << endl;
+    			return;
+    		}
+
+    		m_kp.publicKey = m_cc->deserializePublicKey(pkSer);
+
+
+        }
+
+        void writePK(std::ofstream &stream) {
+
+        	palisade::Serialized pubK;
+
+			if (m_kp.publicKey->Serialize(&pubK)) {
+				if (!palisade::SerializableHelper::SerializationToStream(pubK, stream)) {
+					cerr << "Error writing serialization of public key." << endl;
+					return;
+				}
+			}
+			else {
+				cerr << "Error serializing public key" << endl;
+				return;
+			}
+
+        }
 
         /**
         Read and write ciphertext.
         */
-        bool readCiphertext(std::ifstream &stream, Ciphertext ctxt);
-        bool writeCiphertext(ConstCiphertext ctxt, std::ofstream stream);
+        void readCiphertext(std::ifstream &stream, Ciphertext ctxt) {
+
+    		palisade::Serialized	ser;
+    		if (palisade::SerializableHelper::StreamToSerialization(stream, &ser) == false) {
+    			cerr << "Could not read ciphertext" << endl;
+    			return;
+    		}
+
+    		if (!ctxt->Deserialize(ser)) {
+    			cerr << "Could not deserialize ciphertext" << endl;
+    			return;
+    		}
+
+        }
+
+        void writeCiphertext(ConstCiphertext ctxt, std::ofstream &stream) {
+
+        	palisade::Serialized ser;
+
+			if (ctxt->Serialize(&ser)) {
+				if (!palisade::SerializableHelper::SerializationToStream(ser, stream)) {
+					cerr << "Error writing serialization of ciphertext." << endl;
+					return;
+				}
+			}
+			else {
+				cerr << "Error serializing ciphertext." << endl;
+				return;
+			}
+
+        }
 
         /**
         Read and write plaintext.
         */
-        bool readPlaintext(std::ifstream &stream, Plaintext ptxt);
-        bool writePlaintext(ConstCiphertext ptxt, std::ofstream stream);
+        void readPlaintext(std::ifstream &stream, Plaintext ptxt);
+        void writePlaintext(ConstCiphertext ptxt, std::ofstream stream);
 
         /**
         Encryption and decryption.
@@ -128,35 +210,75 @@ namespace hestd
         	return;
         }
 
-        void evalAddInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2);
+        void evalAddInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2) {
+        	*ctxtIn1 = *(m_cc->EvalAdd(ctxtIn1,ctxtIn2));
+        	return;
+        }
 
-        void evalAdd(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2,  Ciphertext ctxtOut);
-        void evalAddInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2);
+        void evalAdd(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2,  Ciphertext ctxtOut) {
+        	*ctxtOut = *(m_cc->EvalAdd(ctxtIn1,ptxtIn2));
+        	return;
+        }
 
-        void evalSub(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut);
-        void evalSubInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2);
+        void evalAddInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2) {
+        	*ctxtIn1 = *(m_cc->EvalAdd(ctxtIn1,ptxtIn2));
+        	return;
+        }
 
-        void evalSub(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2, Ciphertext ctxtOut);
-        void evalSubInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2);
+        void evalSub(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut) {
+        	*ctxtOut = *(m_cc->EvalSub(ctxtIn1,ctxtIn2));
+        	return;
+        }
 
-        void evalNeg(ConstCiphertext ctxtIn,  Ciphertext ctxtOut);
-        void evalNegInplace(Ciphertext ctxtIn);
+        void evalSubInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2) {
+        	*ctxtIn1 = *(m_cc->EvalSub(ctxtIn1,ctxtIn2));
+        	return;
+        }
 
-        void evalMul(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut){
+        void evalSub(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2,  Ciphertext ctxtOut) {
+        	*ctxtOut = *(m_cc->EvalSub(ctxtIn1,ptxtIn2));
+        	return;
+        }
+
+        void evalSubInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2) {
+        	*ctxtIn1 = *(m_cc->EvalSub(ctxtIn1,ptxtIn2));
+        	return;
+        }
+
+        void evalNeg(ConstCiphertext ctxtIn,  Ciphertext ctxtOut) {
+        	*ctxtOut = *(m_cc->EvalNegate(ctxtIn));
+        	return;
+        }
+
+        void evalNegInplace(Ciphertext ctxtIn) {
+        	*ctxtIn = *(m_cc->EvalNegate(ctxtIn));
+        	return;
+        }
+
+        void evalMul(ConstCiphertext ctxtIn1, ConstCiphertext ctxtIn2, Ciphertext ctxtOut) {
         	*ctxtOut = *(m_cc->EvalMult(ctxtIn1,ctxtIn2));
         	return;
         }
 
-        void evalMulInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2);
+        void evalMulInplace(Ciphertext ctxtIn1, ConstCiphertext ctxtIn2) {
+        	*ctxtIn1 = *(m_cc->EvalMult(ctxtIn1,ctxtIn2));
+        	return;
+        }
 
-        void evalMul(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2,  Ciphertext ctxtOut);
-        void evalMulInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2);
+        void evalMul(ConstCiphertext ctxtIn1, ConstPlaintext ptxtIn2,  Ciphertext ctxtOut) {
+        	*ctxtOut = *(m_cc->EvalMult(ctxtIn1,ptxtIn2));
+        	return;
+        }
 
+        void evalMulInplace(Ciphertext ctxtIn1, ConstPlaintext ptxtIn2) {
+        	*ctxtIn1 = *(m_cc->EvalMult(ctxtIn1,ptxtIn2));
+        	return;
+        }
 
         //Special functions (temporarily added)
 
         Ciphertext CreateCiphertext() {
-        	return Ciphertext(new palisade::CiphertextImpl<palisade::DCRTPoly>());
+        	return Ciphertext(new palisade::CiphertextImpl<palisade::DCRTPoly>(m_cc));
         }
 
         Plaintext CreatePlaintext() {
