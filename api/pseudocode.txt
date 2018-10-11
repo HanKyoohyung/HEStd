@@ -42,3 +42,11 @@ evalMulInplace(Ciphertext* in1, ConstCiphertext* in2)
 
 evalMul(ConstCiphertext* in1, ConstPlaintext* in2, Ciphertext* out)
 evalMulInplace(Ciphertext* in1, ConstPlaintext* in2)
+
+evalUnaryOperation(Operation* op, ConstCiphertext* in1, Ciphertext* out)
+evalBinaryOperation(Operation* op, ConstCiphertext* in1, ConstCiphertext* in2, Ciphertext* out)
+evalTernaryOperation(Operation* op, ConstCiphertext* in1,ConstCiphertext* in2, ConstCiphertext* in3, Ciphertext* out)
+
+evalConstant(ConstPlaintext* in, Ciphertext* out)
+
+

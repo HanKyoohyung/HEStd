@@ -20,6 +20,10 @@
 		"SEAL": {
 			"Version": "3.0",
 			"Configuration": {}
+		},
+		"TFHE": {
+			"Version": "3.0",
+			"Configuration": {}
 		}
 	}
 }
