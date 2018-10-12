@@ -37,6 +37,12 @@ evalSubInplace(Ciphertext* in1, ConstPlaintext* in2)
 evalNeg(ConstCiphertext* in, Ciphertext* out)
 evalNegInplace(Ciphertext* in)
 
+evalConj(ConstCiphertext* in, Ciphertext* out)
+evalConjInPlace(Ciphertext* in)
+
+evalLRot(ConstCiphertext* in, Ciphertext* out, long idx)
+evalLRotInPlace(Ciphertext* in, long idx)
+
 evalMul(ConstCiphertext* in1, ConstCiphertext* in2, Ciphertext* out)
 evalMulInplace(Ciphertext* in1, ConstCiphertext* in2)
 
